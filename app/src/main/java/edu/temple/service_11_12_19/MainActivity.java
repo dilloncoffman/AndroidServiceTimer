@@ -15,7 +15,8 @@ public class MainActivity extends AppCompatActivity {
 
     TextView timerTextView;
     boolean connected;
-    BoundTimerService.TimerBinder binder; // since you know what Service will be returned
+    BoundTimerService.BasicTimerBinder binder; // since you know what Service will be returned
+    private final static String INTERFACE_TYPE = "interface_type";
     Handler handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
                 3. Now you can use this ServiceConnection in bindService(intent, serviceConnection, ...) below
              */
             connected = true;
-            binder = (BoundTimerService.TimerBinder) service;
+            binder = (BoundTimerService.BasicTimerBinder) service;
         }
 
         @Override
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         timerTextView = findViewById(R.id.timerTextView);
 
         Intent intent = new Intent(this, BoundTimerService.class);
-
+        intent.putExtra(INTERFACE_TYPE, BoundTimerService.BASIC_INTERFACE); // Specify what Binder you want
         // 1st is intent,
         // 2nd is a ServiceConnection obj - job is to tell you when you're connected, disconnected,
         // and when you connect it gives you the Binder object the Service returns to you to interact with the service
