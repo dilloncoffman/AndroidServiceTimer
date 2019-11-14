@@ -4,7 +4,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -14,6 +16,13 @@ public class MainActivity extends AppCompatActivity {
     TextView timerTextView;
     boolean connected;
     BoundTimerService.TimerBinder binder; // since you know what Service will be returned
+    Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            timerTextView.setText((String.valueOf(msg.what)));
+            return true;
+        }
+    });
 
     ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -58,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             // 1st because you're interacting with Bound service, make sure you're connected
             if (connected) {
                 // now you can use binder to use methods exposed by Bound Service
-                binder.startMediumTimer();
+                binder.startMediumTimer(handler); // pass handler that Activity owns
             }
         });
 
