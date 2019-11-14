@@ -12,7 +12,7 @@ public class BoundTimerService extends Service {
     Handler timerHandler; // reference to client Handler, for Service to communicate with client
     boolean paused;
 
-    // Present some functionality to a client using a Binder, methods that are exposed to client
+    // Present some functionality to a client using a Binder, methods that are exposed to client, client uses to indirectly speak to the Service, calls methods on binder which then calls Service information
     class TimerBinder extends Binder {
         // Define set of methods that other clients will see when they connect to Service
 

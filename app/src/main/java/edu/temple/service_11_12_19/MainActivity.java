@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
         }
     });
 
+    // How client is made aware it's connected, as well as given mechanism to speak to the service
     ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -76,5 +77,11 @@ public class MainActivity extends AppCompatActivity {
                 binder.pause();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(serviceConnection); // unbind from service, if you've bound to it to avoid memory leaks
     }
 }
