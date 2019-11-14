@@ -61,5 +61,11 @@ public class MainActivity extends AppCompatActivity {
                 binder.startMediumTimer();
             }
         });
+
+        findViewById(R.id.pauseButton).setOnClickListener(v -> {
+            if (connected) { // if connected to bound service
+                binder.pause();
+            }
+        });
     }
 }

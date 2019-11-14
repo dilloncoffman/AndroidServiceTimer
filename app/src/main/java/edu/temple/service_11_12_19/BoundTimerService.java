@@ -8,6 +8,8 @@ import android.util.Log;
 
 public class BoundTimerService extends Service {
 
+    boolean paused;
+
     // Present some functionality to a client using a Binder, methods that are exposed to client
     class TimerBinder extends Binder {
         // Define set of methods that other clients will see when they connect to Service
@@ -21,6 +23,10 @@ public class BoundTimerService extends Service {
 
         public void startLongTimer() {
             startTimer(60);
+        }
+
+        public void pause() { // allow user to toggle between paused and play
+            paused = !paused;
         }
     }
 
@@ -38,6 +44,7 @@ public class BoundTimerService extends Service {
             @Override
             public void run() {
                 for (int i = from; i >= 0; i--) {
+                    while(paused); // spin-lock for pausing, not efficient but just to show
                     Log.d("Countdown", i + "");
                     try {
                         Thread.sleep(1000);
