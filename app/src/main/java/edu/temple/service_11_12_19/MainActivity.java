@@ -1,39 +1,41 @@
 package edu.temple.service_11_12_19;
 
-import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Programmatically create Broadcast to receive message from TimerService
+    TextView timerTextView;
+    boolean connected;
+    BoundTimerService.TimerBinder binder; // since you know what Service will be returned
 
-    BroadcastReceiver receiver = new BroadcastReceiver() {
+    ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
-        public void onReceive(Context context, Intent intent) {
-            // ContentProviders and BroadcastReceivers are given a Context object that have some functionality but not everything an Activity and Service can do
-            timerTextView.setText(String.valueOf(intent.getIntExtra("countdown", 0)));
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // Receives component you're connected to and a Binder
+            /*
+                Things to do after connecting
+                1. Check if you're connected
+                2. Hold on to Binder that service is returning that describes interactions you can perform
+                3. Now you can use this ServiceConnection in bindService(intent, serviceConnection, ...) below
+             */
+            connected = true;
+            binder = (BoundTimerService.TimerBinder) service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            // Component you just disconnected from
+            connected = false;
+            binder = null; // to protect against memory leak
         }
     };
-
-    // BroadcastReceiver needs an Intent Filter
-    IntentFilter filter;
-    TextView timerTextView;
-
-    // Need to register Receiver and Filter with Activity, usually done in onStart()
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        filter = new IntentFilter();
-        filter.addAction(getPackageName() + ".COUNTDOWN_ACTION");
-        // Register BroadcastReceiver and IntentFilter for this Activity
-        registerReceiver(receiver, filter);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,20 +44,22 @@ public class MainActivity extends AppCompatActivity {
 
         timerTextView = findViewById(R.id.timerTextView);
 
-        Intent intent = new Intent(this, TimerService.class);
-        intent.putExtra("from", 15);
+        Intent intent = new Intent(this, BoundTimerService.class);
+
+        // 1st is intent,
+        // 2nd is a ServiceConnection obj - job is to tell you when you're connected, disconnected,
+        // and when you connect it gives you the Binder object the Service returns to you to interact with the service
+        // 3rd is flag to tell Android how important Service is to developer/user
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE); // bind instead of start Service, but binding service takes 3 args,
+
 
         findViewById(R.id.startTimerBtn).setOnClickListener(v -> {
-            startService(intent);
+
+            // 1st because you're interacting with Bound service, make sure you're connected
+            if (connected) {
+                // now you can use binder to use methods exposed by Bound Service
+                binder.startMediumTimer();
+            }
         });
-    }
-
-    // Anything you do in one mirror method, you must do opposite in its mirror method, so onStart needs onStop to unregister receiver
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        // Unregister receiver, otherwise you have a memory leak
-        unregisterReceiver(receiver);
     }
 }
